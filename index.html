@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>North finder</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <style>
+        body{background-color: lightskyblue;margin:0;font-family: arial}
+        #wrapper{width: 320px;margin:0 auto}
+        h1{margin:0;text-align: center}
+        p{text-align: center}
+        #moonSelector{display:block;width: 300px;padding:0;font-size: 0;}
+        #moonSelector p{font-size: 14px;}
+        ul {padding: 0}
+        li{display: inline-block;box-sizing:border-box;width: 64px;height: 64px;border-radius:50%;background-image: url('./img/moonPhase.png');background-size: auto 250px}
+        li:hover{width: 66;height: 66px;border:1px solid yellow}
+        #moon{display:none;width: 64px;height: 64px;border-radius:50%;background: url("./img/moonPhase.png") 350px -174px/auto 250px}
+        #directionBox{width: 300px;margin:auto;text-align: center}
+        .star{width: 64px;height: 64px;margin:0 auto}
+        .star img{width: 100%;height: 100%;margin: 0;}
+        .north{position: relative;height:300px;border-radius:50%;transform: rotate(0deg)}
+        .north img{border-radius:50%}
+        .north #you{position:absolute;width: 64px;height: 64px;top:118px;left: 118px;}
+        #n{width: 64px;height: 64px;}
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+            <h1>North finder</h1>
+            <p>Only works for northern hemisphere.</p>
+        <div id="directionBox">
+            <div id="moonSelector">
+                <p>Click on the moon you see in the sky</p>
+                <ul>
+                    <li data-moon="r1" style="background-position : 350px -174px"></li>
+                    <li data-moon="r2" style="background-position : 259px -9px"></li>
+                    <li data-moon="r3" style="background-position : 77px -174px"></li>
+                    <li data-moon="f" style="background-position : 350px -9px"></li>
+                    <li data-moon="l1" style="background-position : 169px -9px"></li>
+                    <li data-moon="l2" style="background-position : 441px -9px"></li>
+                    <li data-moon="l3" style="background-position : 78px -9px"></li>
+                </ul>
+            </div>
+            <div class="star">
+                <img id="sun" src="./img/sun.png" alt="star">
+                <div id="moon"></div>
+            </div>
+            <div class="north">
+                <img id="n" src="./img/n3.png" alt="north">
+                <img src="./img/you.png" alt="you" id="you">   
+            </div>
+        </div>
+    </div>
+        <script type="text/javascript">
+            var body = document.getElementsByTagName("body"),
+            moonSelector = document.getElementById("moonSelector"),
+            directionBox = document.getElementById("directionBox"),
+            star = document.getElementsByClassName("star"),
+            north = document.getElementsByClassName("north"),
+            north = north[0];
+            star = star[0];
+            sun = document.getElementById("sun"),
+            n = document.getElementById("n"),
+            you = document.getElementById("you");
+            moonSelector.style.display = "none";
+            directionBox.style.display = "block"; //pas touche
+            north.style.display = "none";
+            star.style.display = "none";    
+            //var listDeg = [[6,"E",-90],[9,"SE",-135],[12,"S",180],[15,"SO",135],[18,"O",90],[21,"NO",45],[24,"N",0],[3,"NE",-45]];
+            function turnNorth(deg){
+                var rotate = "rotate("+deg+"deg)";
+                north.style.transform = rotate;
+                rotate = "rotate("+-1*deg+"deg)";
+                you.style.transform = rotate;
+                directionBox.style.display = "block";
+            }
+            function showNorth(hour){
+                var deg = hour * -15;
+                if(hour>= 6 && hour<=18){
+                    //return deg;
+                    console.log("hour entre 6 et 18 inclus");
+                    //affichage de star et north
+                    star.style.display = "block";
+                    north.style.display = "block";
+                    turnNorth(deg);
+                }else{
+                    //console.log("hour entre 18 et 6 exclus");
+                    //mise en forme nuit
+                    body[0].style.backgroundColor = "black";
+                    body[0].style.color = "white";
+                    you.style.backgroundColor = "white";
+                    n.style.backgroundColor = "white";
+                    //console.log("affichage du selecteur de lune");
+                    moonSelector.style.display = "block"; //affichage du selecteur de lune
+                    var liList = document.getElementsByTagName("li");
+                    for(var i=0, il=liList.length;i<il;i++){
+                        liList[i].addEventListener('click',function(e){
+                            var li = e.target;
+                            backPosition = li.style.backgroundPosition
+                            moonType = li.style.data-moon;
+                            moonType = li.getAttribute("data-moon");
+                            showNorthWithMoon(backPosition,moonType,deg);
+                        });
+                    }
+                }
+            }
+            function showNorthWithMoon(backPosition, moonType, deg){
+                moonSelector.style.display = "none";
+                sun.style.display = "none";
+                directionBox.style.display = "block";
+                star.style.display = "block";
+                north.style.display = "block";
+                var moon = document.getElementById("moon");
+                moon.style.display = "block";
+                moon.style.backgroundPosition = backPosition;
+                var listMoon = [["r1",45],["r2",90],["r3",135],["f",180],["l1",-45],["l2",-90],["l3",-135]], // d1 = croissant droit  1/4 etc.
+                degCorrection = 0,
+                moon = moonType;
+                for(var i=0, il=listMoon.length;i<il;i++){
+                    if(moonType == listMoon[i][0]){
+                        degCorrection = listMoon[i][1];
+                        //console.log("devcorrection "+degCorrection);
+                    }
+                }
+                var degr = deg + degCorrection;
+                turnNorth(degr);             
+            }
+            function givePreciseHour(){
+                var d = new Date(),
+                h = d.getHours(),
+                m = d.getMinutes(),
+                hour = 0;
+                hour = h + m/60;        
+                hour = Number((hour).toFixed(1)); // 6.7
+                //console.log("il est en heure "+hour);
+                return hour;
+            }
+            showNorth(givePreciseHour());
+            //showNorth(24);
+    </script>
+  </body>
+</html>
